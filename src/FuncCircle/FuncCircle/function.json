@@ -1,0 +1,15 @@
+{
+    "bindings": [
+        {
+            "type": "httpTrigger",
+            "methods": [
+                "get"
+            ],
+            "authLevel": "anonymous",
+            "name": "req",
+            "route": "circle"
+        }
+    ],
+    "scriptFile": "../bin/FuncCircle.dll",
+    "entryPoint": "FuncCircle.Library.run"
+}

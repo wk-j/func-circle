@@ -1,6 +1,7 @@
 var project = "src/FuncCircle/FuncCircle.fsproj";
 
 Task("Publish").Does(() => {
+    CleanDirectory("publish");
     DotNetCorePublish(project, new DotNetCorePublishSettings {
         OutputDirectory = "publish"
     });

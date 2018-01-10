@@ -38,6 +38,7 @@ let cloneAndConvertToAvatarWithoutApply(img: Image<Rgba32>) (size: Size) radius 
     let result = img.Clone(fun x -> x.Resize(ResizeOptions(Size = size, Mode = ResizeMode.Crop)) |> ignore)
     applyRoundedCorners result radius
 
+(*
 let downloadImage (log: TraceWriter) httpPath = 
     use client = new HttpClient()
     let rs = client.GetAsync(httpPath: string) |> Async.AwaitTask |> Async.RunSynchronously
@@ -50,12 +51,21 @@ let downloadImage (log: TraceWriter) httpPath =
 
     File.WriteAllBytes(targetPath, content)
     (targetPath)
+*)
 
 let isUrl path = (path: string).StartsWith("http")
 
+let downloadStream httpPath = 
+    use client = new HttpClient()
+    let rs = client.GetAsync(httpPath: string) |> Async.AwaitTask |> Async.RunSynchronously
+    rs.Content.ReadAsByteArrayAsync() |> Async.AwaitTask |> Async.RunSynchronously
+
 let processImage (log: TraceWriter) path = 
     log.Info <| sprintf "process file - %s" path
-    use img = Image.Load(path: string)
+
+    let bytes = downloadStream path
+
+    use img = Image.Load(bytes)
     use round = img.Clone(fun x -> convertToAvatar x (Size(300, 300)) 150.0f |> ignore) 
     let name = Path.ChangeExtension(Path.GetFileName(path), ".png")
     round.Save(name)
@@ -67,12 +77,6 @@ let run (req: HttpRequest, log: TraceWriter) =
         let url = imageUrl.ToString();
         log.Info <| sprintf "url - %s" url
 
-        let path = 
-            if isUrl url then 
-                log.Info <| sprintf "download - %s" url
-                downloadImage log url
-            else url
-
-        let name = processImage log path
-        if isUrl url then 
-            File.Delete path
+        processImage log url |> ignore
+    else
+        ()
